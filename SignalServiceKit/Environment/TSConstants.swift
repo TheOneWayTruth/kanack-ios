@@ -266,10 +266,15 @@ public class TSConstantsKanack: TSConstantsProtocol {
 
     public init() {}
 
-    // Host is overridable at the libsignal-net layer via -PkanackHost (see
-    // kanack-libsignal, rust/net/src/env.rs); this is the default from
-    // infra/kanack.env. REST/attachments go through nginx on 9443 -> Jetty/MinIO.
-    private static let kanackBase = "https://chat.kanack.internal:9443"
+    // The public domain, not KANACK_HOST: that one ends in .internal and resolves nowhere.
+    // Android papers over this with SIGNAL_SERVICE_IPS, but there is no equivalent here --
+    // URLSession does plain DNS. nginx on 9443 serves REST/attachments (-> Jetty/MinIO) under
+    // our own CA, which is what signalCaPinned anchors to.
+    private static let kanackBase = "https://kanack.alexanderwick.com:9443"
+
+    // Emoji, on the same host but port 443 with a Let's Encrypt certificate. This one is fetched
+    // over an unpinned session (shouldUseSignalCertificate == false), so system trust applies.
+    private static let kanackPublicBase = "https://kanack.alexanderwick.com"
 
     public let mainServiceURL = TSConstantsKanack.kanackBase
     public let textSecureCDN0ServerURL = "\(TSConstantsKanack.kanackBase)/cdn"
@@ -277,13 +282,14 @@ public class TSConstantsKanack: TSConstantsProtocol {
     public let textSecureCDN3ServerURL = TSConstantsKanack.kanackBase
     public let storageServiceURL = TSConstantsKanack.kanackBase
     public let sfuURL = TSConstantsKanack.kanackBase
-    public let sfuTestURL = "https://sfu.test.voip.signal.org"
-    public let svr2URL = "wss://chat.kanack.internal:9443"
+    public let sfuTestURL = TSConstantsKanack.kanackBase
+    public let svr2URL = "wss://kanack.alexanderwick.com:9443"
     public let registrationCaptchaURL = "\(TSConstantsKanack.kanackBase)/captcha/registration/generate.html"
     public let challengeCaptchaURL = "\(TSConstantsKanack.kanackBase)/captcha/challenge/generate.html"
     public let kUDTrustRoots = ["Bb7Dp4DI/b6boyVl7XGFvzhjkmak42YJHSgJRTSRX0tt"]
-    public let updatesURL = "https://updates.signal.org"
-    public let updates2URL = "https://updates2.signal.org"
+    // updates = emoji (unpinned), updates2 = badges and release notes (pinned).
+    public let updatesURL = TSConstantsKanack.kanackPublicBase
+    public let updates2URL = TSConstantsKanack.kanackBase
 
     public let censorshipFReflectorHost = "reflector-signal.global.ssl.fastly.net"
     public let censorshipGReflectorHost = "reflector-nrgwuv7kwq-uc.a.run.app"
