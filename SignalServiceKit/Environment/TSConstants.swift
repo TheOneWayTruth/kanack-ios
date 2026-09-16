@@ -13,6 +13,7 @@ public class TSConstants {
     private enum Environment {
         case production
         case staging
+        case kanack
     }
 
     private static let environment: Environment = {
@@ -25,14 +26,12 @@ public class TSConstants {
         }
 #endif
 
-        // If you do want to make a build that will always connect to staging,
-        // change this value. (Scheme environment variables are only set when
-        // launching via Xcode, so this approach is still quite useful.)
-        return .production
+        // Канак, мой дорогой – selfhosted server, sole distribution flavor.
+        return .kanack
     }()
 
     public static var isUsingProductionService: Bool {
-        return environment == .production
+        return environment != .staging
     }
 
     // Never instantiate this class.
@@ -81,12 +80,16 @@ public class TSConstants {
             return TSConstantsProduction()
         case .staging:
             return TSConstantsStaging()
+        case .kanack:
+            return TSConstantsKanack()
         }
     }()
 
     public static let libSignalEnv: Net.Environment = {
         switch environment {
-        case .production:
+        case .production, .kanack:
+            // PRODUCTION = the Kanack endpoints compiled into our own libsignal fork
+            // (kanack-libsignal, rust/net/src/env.rs).
             return .production
         case .staging:
             return .staging
@@ -255,6 +258,58 @@ public class TSConstantsStaging: TSConstantsProtocol {
 
     public let backupServerPublicParams = Data(base64Encoded: "AXYrGb9IfugAAJiPKp+mdXUx+OL9zBolPYHYQz6GI1gWjpEu5me3zVNSvmYY4zWboZHif+HG1sDHSuvwFd0QszS6h3nZ6vRdM/IYGK+cLynw3ucWo7idf3zjOG3b6JnGT/z7XYCr6HuOGkWH4DQWCH98hxVZMGOgmT8DCQoqebQb3oK1yrwEglRWmtI01KhRg9RGUKoQiwuej1JZEY8uaG4Uz9n1cVODJ1iuByhNqGHo+KfI4iWhjtx2AnhYqHViQ3CMd4ASGBJtic9UTFVk/4vegVIy0wfYsAmViftzK6t4")!
 
+}
+
+// MARK: - Kanack
+
+public class TSConstantsKanack: TSConstantsProtocol {
+
+    public init() {}
+
+    // Host is overridable at the libsignal-net layer via -PkanackHost (see
+    // kanack-libsignal, rust/net/src/env.rs); this is the default from
+    // infra/kanack.env. REST/attachments go through nginx on 9443 -> Jetty/MinIO.
+    private static let kanackBase = "https://chat.kanack.internal:9443"
+
+    private let defaultValues = TSConstantsProduction()
+
+    public let mainServiceURL = Self.kanackBase
+    public let textSecureCDN0ServerURL = "\(Self.kanackBase)/cdn"
+    public let textSecureCDN2ServerURL = "\(Self.kanackBase)/cdn"
+    public let textSecureCDN3ServerURL = Self.kanackBase
+    public let storageServiceURL = Self.kanackBase
+    public let sfuURL = Self.kanackBase
+    public lazy var sfuTestURL = defaultValues.sfuTestURL
+    public let svr2URL = "wss://chat.kanack.internal:9443"
+    public let registrationCaptchaURL = "\(Self.kanackBase)/captcha/registration/generate.html"
+    public let challengeCaptchaURL = "\(Self.kanackBase)/captcha/challenge/generate.html"
+    public let kUDTrustRoots = ["Bb7Dp4DI/b6boyVl7XGFvzhjkmak42YJHSgJRTSRX0tt"]
+    public lazy var updatesURL = defaultValues.updatesURL
+    public lazy var updates2URL = defaultValues.updates2URL
+
+    public lazy var censorshipFReflectorHost = defaultValues.censorshipFReflectorHost
+    public lazy var censorshipGReflectorHost = defaultValues.censorshipGReflectorHost
+
+    public lazy var serviceCensorshipPrefix = defaultValues.serviceCensorshipPrefix
+    public lazy var cdn0CensorshipPrefix = defaultValues.cdn0CensorshipPrefix
+    public lazy var cdn2CensorshipPrefix = defaultValues.cdn2CensorshipPrefix
+    public lazy var cdn3CensorshipPrefix = defaultValues.cdn3CensorshipPrefix
+    public lazy var storageServiceCensorshipPrefix = defaultValues.storageServiceCensorshipPrefix
+    public lazy var svr2CensorshipPrefix = defaultValues.svr2CensorshipPrefix
+
+    // Not selfhostable; PIN creation opts out of SVR client-side, so these
+    // enclave measurements are never actually contacted.
+    public lazy var svr2Enclaves = defaultValues.svr2Enclaves
+    public lazy var activeSvr2EnclaveCount = defaultValues.activeSvr2EnclaveCount
+
+    public let applicationGroup = "group." + Bundle.main.bundleIdPrefix + ".signal.group"
+
+    // Generated for our own server; see infra/secrets/kanack-public.json (gen-secrets.js).
+    public let serverPublicParams = Data(base64Encoded: "ALCAr8JKXEi84dniUCCGlztvzS0icOZwIP1GsmuRcAxtJrwzEnU7PSoLlD9HY0DQSL8Qf+snLK9+JVl7hn0O03BQLbq5ufyfxt4Bx+/qZbtctHFbx0Qx6qqKHjJ8ISN7MrC2pN6qgczbyoH3qI0Tf2UZ1gZ7SIV6pvVhk2VSo24dVqCI9jHbRKtUaFSyqQurMffH4kJ7OsknZl4cSUSah3uIswL8qYThUT74Od9yugExXC/vZThfY0GMttBfr1wndwrcKiA90FAvKT1H8Z9Ygv2lCm4ca8VK6Sdo2P2v/TpdfDmmRPgB5rikgXR0hih66mohOw/+gNJUU3KkqX0uW1ZS2epUINuwk/0wzm2gMwlQsgU4Jtm8Goq/hcevp88yQSp2wV3jI0jbD89PTeBPLWvVqAeynd/VyUfBX2SaODIS9Bv5kXU3S4FTFyzkezlR528scos0eZ4g0j3kXAaTKSDUb3zGQdudE21FEKtGwIyLAyTurpsqPQwlM8k7AckcTXjiaPLa3x1s0ZepO3kvgQXOehkuR4KP9towZpbRrFM1OPWWfahMYjtMsQ6gaEi7Un2K/d1TCi0/+L7SWRNg3gLWHLeigkGlJx0OJ0PFxyhqP2WouSD3/cksRq4zdL0iPfbqPcy3gzq+g/YZmm2oVu7eV/g0hckNd+M4U/Cq8D8J4EEXJzzRZvyl4t6UXUWtjbbQMuCLsa4ThYtGAuUm1z0WfkH1WKtoDx4bj+3/RY4zPmPPu6miMRWwLb9AtHTjCa5jagBcYtS4BGC+6XLcPmCnKpcpbmoEpS3ysdvwY/dKrvIKpZqg1oQg07YBFzeWXcoWkybx8nX1LT+P07RciiZo54qLICBpG306bj59Df6Vp1FTKPAif0EOm2OpAfH3eA==")!
+
+    public let callLinkPublicParams = Data(base64Encoded: "AC4nLFdBxdIwSh8OTx4PrjnuA+IMy7/utzw32fYXdKJ//oUaz0Lyv2bgMEDfaq+b/+kV8RWyDXkYyVdYQfV6PSrCXMj+Q4ZTwwmf0x/vbENSCdUiGD8omPMr9ynhDBNZY3pBXaBb4o+W1SFsFkNg3P17WqOzq8hSgBe9gFfIjGYrKEVvlUhnTMhkL57KJINtJUHy3JRXYgg4wwbLjKu8DjsCp8wYZfbOsh3Cz6e1/zo5ibqNwfmIRilqYRoVsYkiMp6Uue9Op8KU/WJjlwVzBpqTmuEU66VxyXOo517QCoIM")!
+
+    public let backupServerPublicParams = Data(base64Encoded: "APS7HWBObnSlcLzxKFk28BKbWpzPGeYcOaJVPyp9+ksFQmywvFoUQNPkwYzuF48GoIWubTRSFYlDkHf/aJ3JW23mdOBl6S7PqE3JxaTJW/G+BS572o8D78cFB2CoKuHnaKxxTYHCp9WLFhgh2zR7QjJFfe/7KtEEgVxahCwA24VHWEN3wOFPKAPFcpmc2zhNaSp9eA6KY1nu1VY1gEvOrzQCZrFdODryiBKKYnezOcA+t8WLiHeRZf0J+KOX68/YalTi5bMcKyrNHKiF1FQ2PQvMpaBne2E4p85kewtceoMD")!
 }
 
 #if TESTABLE_BUILD

@@ -4,8 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - main
-      - release/*
+      - kanack
 
 # On PRs, "head_ref" is defined and is consistent across updates. On
 # pushes, it's not defined, so we use "run_id", which is unique across
@@ -24,7 +23,7 @@ jobs:
   build_and_test:
     name: Build and Test
     timeout-minutes: 20
-    runs-on: macos-26-xlarge
+    runs-on: macos-26
     env:
       FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 7
 
@@ -53,8 +52,6 @@ jobs:
           xcodebuild -downloadPlatform iOS
 
       - uses: ./.github/actions/clone-everything
-        with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1 # Reads .ruby-version file by default
