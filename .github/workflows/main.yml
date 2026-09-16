@@ -53,10 +53,27 @@ jobs:
 
       - uses: ./.github/actions/clone-everything
 
+      - name: Checkout kanack-libsignal
+        uses: actions/checkout@v6
+        with:
+          repository: TheOneWayTruth/kanack-libsignal
+          ref: kanack
+          token: ${{ secrets.LIBSIGNAL_ACCESS_TOKEN }}
+          path: ../libsignal
+
+      - name: Install Rust iOS simulator target
+        run: |
+          RUST_TOOLCHAIN=$(cat ../libsignal/rust-toolchain)
+          rustup toolchain install "$RUST_TOOLCHAIN"
+          rustup target add --toolchain "$RUST_TOOLCHAIN" aarch64-apple-ios-sim
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1 # Reads .ruby-version file by default
         with:
           bundler-cache: true
+
+      - name: Pod install (local kanack-libsignal fork)
+        run: bundle exec pod install
 
       - name: Build and Test
         run: Scripts/build-and-test.sh
