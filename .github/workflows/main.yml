@@ -22,7 +22,8 @@ env:
 jobs:
   build_and_test:
     name: Build and Test
-    timeout-minutes: 20
+    # Generous because a cold libsignal-ffi build (release + fat LTO) runs first.
+    timeout-minutes: 60
     runs-on: macos-26
     env:
       FASTLANE_XCODEBUILD_SETTINGS_RETRIES: 7
@@ -61,17 +62,32 @@ jobs:
           token: ${{ secrets.LIBSIGNAL_ACCESS_TOKEN }}
           path: libsignal
 
-      - name: Move kanack-libsignal next to the repo checkout
-        run: mv libsignal ../libsignal
+      # The Podfile points at ../libsignal (sibling checkouts, as in local dev),
+      # but actions/checkout refuses to write outside the workspace. Keeping the
+      # real directory inside the workspace also keeps it cacheable.
+      - name: Link kanack-libsignal next to the repo checkout
+        run: ln -s "$GITHUB_WORKSPACE/libsignal" "$GITHUB_WORKSPACE/../libsignal"
 
       - name: Install Rust iOS simulator target
         run: |
-          RUST_TOOLCHAIN=$(cat ../libsignal/rust-toolchain)
+          RUST_TOOLCHAIN=$(cat libsignal/rust-toolchain)
           rustup toolchain install "$RUST_TOOLCHAIN"
           rustup target add --toolchain "$RUST_TOOLCHAIN" aarch64-apple-ios-sim
 
+      - name: Cache libsignal-ffi build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            libsignal/target
+          key: libsignal-ffi-ios-sim-${{ hashFiles('libsignal/Cargo.lock') }}-${{ github.sha }}
+          restore-keys: |
+            libsignal-ffi-ios-sim-${{ hashFiles('libsignal/Cargo.lock') }}-
+            libsignal-ffi-ios-sim-
+
       - name: Build libsignal-ffi for iOS Simulator (arm64)
-        working-directory: ../libsignal
+        working-directory: libsignal
         env:
           CARGO_BUILD_TARGET: aarch64-apple-ios-sim
         run: swift/build_ffi.sh -r

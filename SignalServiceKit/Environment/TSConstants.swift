@@ -271,36 +271,38 @@ public class TSConstantsKanack: TSConstantsProtocol {
     // infra/kanack.env. REST/attachments go through nginx on 9443 -> Jetty/MinIO.
     private static let kanackBase = "https://chat.kanack.internal:9443"
 
-    private let defaultValues = TSConstantsProduction()
-
     public let mainServiceURL = TSConstantsKanack.kanackBase
     public let textSecureCDN0ServerURL = "\(TSConstantsKanack.kanackBase)/cdn"
     public let textSecureCDN2ServerURL = "\(TSConstantsKanack.kanackBase)/cdn"
     public let textSecureCDN3ServerURL = TSConstantsKanack.kanackBase
     public let storageServiceURL = TSConstantsKanack.kanackBase
     public let sfuURL = TSConstantsKanack.kanackBase
-    public lazy var sfuTestURL = defaultValues.sfuTestURL
+    public let sfuTestURL = "https://sfu.test.voip.signal.org"
     public let svr2URL = "wss://chat.kanack.internal:9443"
     public let registrationCaptchaURL = "\(TSConstantsKanack.kanackBase)/captcha/registration/generate.html"
     public let challengeCaptchaURL = "\(TSConstantsKanack.kanackBase)/captcha/challenge/generate.html"
     public let kUDTrustRoots = ["Bb7Dp4DI/b6boyVl7XGFvzhjkmak42YJHSgJRTSRX0tt"]
-    public lazy var updatesURL = defaultValues.updatesURL
-    public lazy var updates2URL = defaultValues.updates2URL
+    public let updatesURL = "https://updates.signal.org"
+    public let updates2URL = "https://updates2.signal.org"
 
-    public lazy var censorshipFReflectorHost = defaultValues.censorshipFReflectorHost
-    public lazy var censorshipGReflectorHost = defaultValues.censorshipGReflectorHost
+    public let censorshipFReflectorHost = "reflector-signal.global.ssl.fastly.net"
+    public let censorshipGReflectorHost = "reflector-nrgwuv7kwq-uc.a.run.app"
 
-    public lazy var serviceCensorshipPrefix = defaultValues.serviceCensorshipPrefix
-    public lazy var cdn0CensorshipPrefix = defaultValues.cdn0CensorshipPrefix
-    public lazy var cdn2CensorshipPrefix = defaultValues.cdn2CensorshipPrefix
-    public lazy var cdn3CensorshipPrefix = defaultValues.cdn3CensorshipPrefix
-    public lazy var storageServiceCensorshipPrefix = defaultValues.storageServiceCensorshipPrefix
-    public lazy var svr2CensorshipPrefix = defaultValues.svr2CensorshipPrefix
+    public let serviceCensorshipPrefix = "service"
+    public let cdn0CensorshipPrefix = "cdn"
+    public let cdn2CensorshipPrefix = "cdn2"
+    public let cdn3CensorshipPrefix = "cdn3"
+    public let storageServiceCensorshipPrefix = "storage"
+    public let svr2CensorshipPrefix = "svr2"
 
     // Not selfhostable; PIN creation opts out of SVR client-side, so these
     // enclave measurements are never actually contacted.
-    public lazy var svr2Enclaves = defaultValues.svr2Enclaves
-    public lazy var activeSvr2EnclaveCount = defaultValues.activeSvr2EnclaveCount
+    public let svr2Enclaves = [
+        MrEnclave("ced8217b26228e4b210c985786999d095c4958a94faf37b14acaf25c4cbb02a4"),
+        MrEnclave("1240acbd4aa26974184844c8a46b1022d3957ac8a76c1fd8f5b1a15141ee0708"),
+    ]
+
+    public let activeSvr2EnclaveCount: Int = 1
 
     public let applicationGroup = "group." + Bundle.main.bundleIdPrefix + ".signal.group"
 
