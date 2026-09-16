@@ -70,6 +70,12 @@ jobs:
           rustup toolchain install "$RUST_TOOLCHAIN"
           rustup target add --toolchain "$RUST_TOOLCHAIN" aarch64-apple-ios-sim
 
+      - name: Build libsignal-ffi for iOS Simulator (arm64)
+        working-directory: ../libsignal
+        env:
+          CARGO_BUILD_TARGET: aarch64-apple-ios-sim
+        run: swift/build_ffi.sh -r
+
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1 # Reads .ruby-version file by default
         with:
