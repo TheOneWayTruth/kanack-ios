@@ -68,11 +68,12 @@ jobs:
       - name: Link kanack-libsignal next to the repo checkout
         run: ln -s "$GITHUB_WORKSPACE/libsignal" "$GITHUB_WORKSPACE/../libsignal"
 
+      # Mirrors kanack-libsignal's own iOS release workflow (ios_artifacts.yml).
       - name: Install Rust iOS simulator target
-        run: |
-          RUST_TOOLCHAIN=$(cat libsignal/rust-toolchain)
-          rustup toolchain install "$RUST_TOOLCHAIN"
-          rustup target add --toolchain "$RUST_TOOLCHAIN" aarch64-apple-ios-sim
+        run: rustup toolchain install "$(cat libsignal/rust-toolchain)" --profile minimal --target aarch64-apple-ios-sim
+
+      - name: Install protoc
+        run: brew install protobuf
 
       - name: Cache libsignal-ffi build
         uses: actions/cache@v4
