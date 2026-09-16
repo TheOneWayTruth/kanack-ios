@@ -59,7 +59,10 @@ jobs:
           repository: TheOneWayTruth/kanack-libsignal
           ref: kanack
           token: ${{ secrets.LIBSIGNAL_ACCESS_TOKEN }}
-          path: ../libsignal
+          path: libsignal
+
+      - name: Move kanack-libsignal next to the repo checkout
+        run: mv libsignal ../libsignal
 
       - name: Install Rust iOS simulator target
         run: |
