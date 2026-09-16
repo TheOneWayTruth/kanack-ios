@@ -273,16 +273,16 @@ public class TSConstantsKanack: TSConstantsProtocol {
 
     private let defaultValues = TSConstantsProduction()
 
-    public let mainServiceURL = Self.kanackBase
-    public let textSecureCDN0ServerURL = "\(Self.kanackBase)/cdn"
-    public let textSecureCDN2ServerURL = "\(Self.kanackBase)/cdn"
-    public let textSecureCDN3ServerURL = Self.kanackBase
-    public let storageServiceURL = Self.kanackBase
-    public let sfuURL = Self.kanackBase
+    public let mainServiceURL = TSConstantsKanack.kanackBase
+    public let textSecureCDN0ServerURL = "\(TSConstantsKanack.kanackBase)/cdn"
+    public let textSecureCDN2ServerURL = "\(TSConstantsKanack.kanackBase)/cdn"
+    public let textSecureCDN3ServerURL = TSConstantsKanack.kanackBase
+    public let storageServiceURL = TSConstantsKanack.kanackBase
+    public let sfuURL = TSConstantsKanack.kanackBase
     public lazy var sfuTestURL = defaultValues.sfuTestURL
     public let svr2URL = "wss://chat.kanack.internal:9443"
-    public let registrationCaptchaURL = "\(Self.kanackBase)/captcha/registration/generate.html"
-    public let challengeCaptchaURL = "\(Self.kanackBase)/captcha/challenge/generate.html"
+    public let registrationCaptchaURL = "\(TSConstantsKanack.kanackBase)/captcha/registration/generate.html"
+    public let challengeCaptchaURL = "\(TSConstantsKanack.kanackBase)/captcha/challenge/generate.html"
     public let kUDTrustRoots = ["Bb7Dp4DI/b6boyVl7XGFvzhjkmak42YJHSgJRTSRX0tt"]
     public lazy var updatesURL = defaultValues.updatesURL
     public lazy var updates2URL = defaultValues.updates2URL
