@@ -44,13 +44,24 @@ jobs:
         run: |
           Scripts/check_xcode_version.py --relaxed
 
+      # Both downloads intermittently fail with "Unable to connect to simulator".
       - name: Download Metal toolchain
         run: |
-          xcodebuild -downloadComponent MetalToolchain
+          for attempt in 1 2 3; do
+            xcodebuild -downloadComponent MetalToolchain && exit 0
+            echo "attempt $attempt failed, retrying in 30s"
+            sleep 30
+          done
+          exit 1
 
       - name: Download iOS runtime
         run: |
-          xcodebuild -downloadPlatform iOS
+          for attempt in 1 2 3; do
+            xcodebuild -downloadPlatform iOS && exit 0
+            echo "attempt $attempt failed, retrying in 30s"
+            sleep 30
+          done
+          exit 1
 
       - uses: ./.github/actions/clone-everything
 

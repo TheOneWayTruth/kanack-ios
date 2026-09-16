@@ -7,6 +7,8 @@ import Security
 
 /// A simplified version of AFNetworking's AFSecurityPolicy.
 public struct HttpSecurityPolicy {
+    // Kanack: signal-messenger.cer holds our own CA (CN=Kanack CA), not Signal's. The file keeps
+    // its name so the Xcode project's resource reference stays untouched.
     public static let signalCaPinned: HttpSecurityPolicy = .init(pinnedCertificates: [Certificates.load("signal-messenger", extension: "cer")])
     public static let systemDefault: HttpSecurityPolicy = .init()
 
